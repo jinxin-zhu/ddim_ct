@@ -1,0 +1,131 @@
+data:
+    dataset: "Task02_Heart"
+    category: "Heart"
+    image_size: 320
+    channels: 1
+    slices: null
+    monai_transform: false
+    logit_transform: false
+    uniform_dequantization: false
+    gaussian_dequantization: false
+    random_flip: true
+    rescaled: true
+    num_workers: 4
+
+ENVIRONMENT:
+    CUDA: True
+    NUM_GPU: 2
+    GPU_USED_PERCENT: 0.4
+
+DATA_PREPARE:
+    TRAIN_IMAGE_DIR: null
+    TRAIN_MASK_DIR: null
+    TEST_IMAGE_DIR: null
+    TEST_MASK_DIR: null
+    UNLABEL_IMAGE_DIR: null
+    SPACINGD: 
+        PIXDIM: [1.25, 1.25, 1.3700000047683716]
+        MODE: ["bilinear", "nearest"]
+    ORIENTATIOND: 
+        AXCODES: "RAS"
+    SCALEINTENSITYRANGED: 
+        A_MIN: -200
+        A_MAX: 200
+        B_MIN: 0.0
+        B_MAX: 1.0
+        CLIP: True
+    RESIZED: 
+        SPATIAL_SIZE: [128,128,64]
+    IS_CACHE: False
+    TRAIN_IMAGE_DIR: null
+    TRAIN_MASK_DIR: null
+    # TEST_IMAGE_DIR: "/public/datasets/decathlon/Task02_Heart/imagesTr/"
+    # TEST_MASK_DIR: "/public/datasets/decathlon/Task02_Heart/labelsTr/"
+    # UNLABEL_IMAGE_DIR: "/public/datasets/decathlon/Task02_Heart/imagesTs/"
+    UNLABEL_IMAGE_DIR: "/public/datasets/decathlon/Task02_Heart/imagesTr/"
+    BATCH_SIZE: 2
+    NUM_WORKER: 4
+
+DATA_LOADER:
+    WINDOW_LEVEL: [-325, 325]
+
+model:
+    type: "simple"
+    in_channels: 1
+    out_ch: 1
+    ch: 256
+    ch_mult: [1, 1, 2, 2, 4, 4]
+    num_res_blocks: 2
+    attn_resolutions: [16, ]
+    dropout: 0.0
+    var_type: fixedsmall
+    ema_rate: 0.999
+    ema: True
+    resamp_with_conv: True
+
+# denoise model config
+DENOISE_MODEL:
+    META_ARCHITECTURE : 'UNet'
+    DEEP_SUPERVISION : False
+    AUXILIARY_TASK : False
+    AUXILIARY_CLASS : 1
+    NUM_CLASSES : null
+    NUM_CHANNELS : [16, 32, 64, 128, 256]
+    NUM_BLOCKS : [2, 2, 2, 2]
+    DECODER_NUM_BLOCK : 2
+    ENCODER_CONV_BLOCK : 'ResFourLayerConvBlock'
+    DECODER_CONV_BLOCK : 'ResTwoLayerConvBlock'
+    NUM_DEPTH : 4
+    CONTEXT_BLOCK : null
+    IS_PREPROCESS : False
+    IS_POSTPROCESS : False
+    IS_DYNAMIC_EMPTY_CACHE : False
+    WEIGHT_DIR : null
+    BEST_MODEL_PATH : null
+    CH : 256
+
+diffusion:
+    beta_schedule: linear
+    beta_start: 0.0001
+    beta_end: 0.02
+    num_diffusion_timesteps: 1000
+
+training:
+    batch_size: 2
+    start_epoch: 0
+    n_epochs: 50
+    # n_iters: 5000000
+    snapshot_freq: 5000
+    validation_freq: 2000
+    is_distributed_train: False
+    is_apex_train: False
+    saver:
+        saver_dir: '/home/jinxinzhu/project/model_inf/ddim/output/trainlog'
+    optimizer:
+        weight_decay: 0.000
+        method: "Adam"
+        lr: 0.0001
+        l2_penalty: 0.00005
+        beta1: 0.9
+        amsgrad: false
+        eps: 0.00000001
+        is_grad_clip: True
+        grad_clip: 1.0
+
+testing:
+    is_fp16: False
+    DENOISE_MODEL_WEIGHT_DIR: null
+    saver_dir: '/home/jinxinzhu/project/model_inf/ddim/output/testlog'
+
+sampling:
+    denoise_model_path: "/home/jinxinzhu/project/model_inf/ddim/output/trainlog/time-2023-02-13_17-05-27_resized-[128, 128, 64]/models/best_model.pt"
+    batch_size: 1
+    total_n_samples: 5
+    last_only: True
+    fid: True
+    interpolation: True
+    sequence: True
+    channels: 1
+    image_size: 128
+    slices: 64
+    custom_floder: null
